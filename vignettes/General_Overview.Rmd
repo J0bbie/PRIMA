@@ -1,0 +1,51 @@
+---
+title: 'Overview of PRIMA'
+date: "`r BiocStyle::doc_date()`"
+author: "Job van Riet"
+vignette: >
+  %\VignetteIndexEntry{General_Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+package: 'PRIMA'
+output: BiocStyle::html_document
+---
+
+```{r knitr_init, echo = FALSE, cache = FALSE, results = 'hide', warning=FALSE, message=FALSE}
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(PRIMA))
+```
+
+# Abstract
+
+`PRIMA` is a wrapper-package around the use of [primer3](https://github.com/primer3-org/primer3) for designing PCR primers.
+It contains several functions to output only those primer3-designed primers which include the given target DNA sequence.
+
+This is useful to ensure that the resulting PCR-product contains for instance the somatic breakpoint of structural variants or other necessary genomic variants-of-interest. 
+
+Below, the entire workflow is given using a number of manually-curated genomic variant and somatic alterations on the human reference genome (GRCh37 and GRCh38). Using the flexible and well-maintained Bioconductor infrastructure and classes, `PRIMA` can easily be incorporated within existing workflows.
+
+## Installation of primer3.
+
+Following the instructions from [primer3](https://github.com/primer3-org/primer3), users need make/install primer3 and the assorted setting files (primer3_config folder) and provide the path of the primer3_config folder. In addition, (if not automatically detected) the path to primer3 must also be given.
+
+## Logging parameters.
+
+Various logging messages are generated using the futile.logger package.
+For illustration purposes, we will be logging the DEBUG-messages to have a better understanding of the underlying happenings.
+
+```{r, label = 'Logging options', eval = TRUE, results = 'hide'}
+# Display tracing messages:
+futile.logger::flog.threshold(futile.logger::DEBUG)
+
+# Or only display general information messages:
+futile.logger::flog.threshold(futile.logger::INFO)
+```
+
+# General workflow.
+
+asdasd
+
+# Session Information
+```{r, label = 'Session Information', eval = TRUE}
+utils::sessionInfo()
+```

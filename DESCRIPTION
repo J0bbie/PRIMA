@@ -1,0 +1,25 @@
+Package: PRIMA
+Type: Package
+Title: Generation of PCR primers using primer3
+Version: 0.1
+Authors@R: person("Job", "van Riet", email = "jobvriet@gmail.com", role = c("cre"))
+biocViews: Sequencing
+License: GPL-3 + file LICENSE
+URL: https://github.com/J0bbie/PRIMA,
+BugReports: https://github.com/J0bbie/PRIMA,
+Description: Wrapper around primer3 for use in R.
+LazyData: FALSE
+Imports:
+    data.table (>= 1.14.2)
+Suggests: 
+    BiocStyle (>= 2.20.2),
+    checkmate (>= 2.0.0),
+    knitr (>= 1.37),
+    GenomicRanges (>= 1.44.0),
+    testthat (>= 3.0.4),
+    rmarkdown (>= 2.11),
+    Biostrings (>= 2.60.2),
+    futile.logger (>= 1.4.3)
+VignetteBuilder: knitr
+Encoding: UTF-8
+RoxygenNote: 7.1.2
