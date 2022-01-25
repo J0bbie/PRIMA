@@ -43,7 +43,11 @@ futile.logger::flog.threshold(futile.logger::INFO)
 
 # General workflow.
 
-asdasd
+```{r, eval = FALSE}
+DNA.MDM2 <- Biostrings::DNAString('ATGTGCAATACCAACATGTCTGTACCTACTGATGGTGCTGTAACCACCTCACAGATTCCAGCTTCGGAACAAGAGACCCTGGTTCTTTTTTATCTTGGCCAGTATATTATGACTAAACGATTATATGATGAGAAGCAACAACATATTGTA')
+
+primer3.results <- performPrimer3(DNA.MDM2, target = Biostrings::DNAString('TGGTTCTTTTT'), nPrimer = 3, primer3_config = '~/primer3/src/primer3_config/')
+```
 
 # Session Information
 ```{r, label = 'Session Information', eval = TRUE}

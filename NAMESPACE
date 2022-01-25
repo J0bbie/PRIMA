@@ -2,3 +2,5 @@
 
 export(performPrimer3)
 export(runSystemCommand)
+import(dplyr)
+import(tidyr)

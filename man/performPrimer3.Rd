@@ -50,7 +50,7 @@ Alternatively, a numeric vector can be given to exclude that starting position +
 \item{primer3_defaultsettings}{(character): Path to primer3 default settings file.}
 }
 \value{
-(\link[data.table]{data.table}) Results of primer3 in a data.table.
+(\link[tibble]{tibble}) Results of primer3 in a tibble.
 }
 \description{
 Performs a local primer3 analysis to generate PCR primers based on a given DNA or RNA sequence. 
@@ -60,14 +60,11 @@ Please see the primer3 instructions on more detailed information on the primer3-
 In addition, the path to the primer3_config folder need to specified and (if not detected) also the primer3 executable.
 }
 \examples{
- \dontrun{
+ \donttest{
  
  DNA.MDM2 <- Biostrings::DNAString('ATGTGCAATACCAACATGTCTGTACCTACTGATGGTGCTGTAACCACCTCACAGATT
  CCAGCTTCGGAACAAGAGACCCTGGTTCTTTTTTATCTTGGCCAGTATATTATGACTAAACGATTATATGATGAGAAGCAACAACATATTGTA')
  primer3.results <- performPrimer3(DNA.MDM2, target = Biostrings::DNAString('TGGTTCTTTTT'), nPrimer = 3)
  
 	}
-}
-\author{
-Job van Riet \email{j.vanriet@erasmusmc.nl}
 }

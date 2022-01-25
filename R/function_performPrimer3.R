@@ -23,16 +23,17 @@
 #' @param primer3_defaultsettings (character): Path to primer3 default settings file.
 #' 
 #' @examples
-#'  \dontrun{
+#'  \donttest{
 #'  
 #'  DNA.MDM2 <- Biostrings::DNAString('ATGTGCAATACCAACATGTCTGTACCTACTGATGGTGCTGTAACCACCTCACAGATT
 #'  CCAGCTTCGGAACAAGAGACCCTGGTTCTTTTTTATCTTGGCCAGTATATTATGACTAAACGATTATATGATGAGAAGCAACAACATATTGTA')
 #'  primer3.results <- performPrimer3(DNA.MDM2, target = Biostrings::DNAString('TGGTTCTTTTT'), nPrimer = 3)
 #'  
 #' 	}
-#' @return (\link[data.table]{data.table}) Results of primer3 in a data.table.
+#' @return (\link[tibble]{tibble}) Results of primer3 in a tibble.
 #' 
-#' @author Job van Riet \email{j.vanriet@erasmusmc.nl}
+#' @import tidyr
+#' @import dplyr
 #' @export
 performPrimer3 <- function(input.sequence, target = NULL, exclude = NULL, product.sizes = c('50-150', '150-250'), primer.size = c(18, 20, 23), primer.tm = c(57, 59, 62), nPrimer = 3, 
                            internalOligo = FALSE, mismatching.library = NULL, primer3.args = NULL, primer3_core.binary = NULL, primer3_config = NULL, primer3_defaultsettings = NULL){
@@ -45,15 +46,15 @@ performPrimer3 <- function(input.sequence, target = NULL, exclude = NULL, produc
   )
   
   checkmate::assert(
-    checkmate::checkClass(target, 'DNAString', null.ok = T),
-    checkmate::checkClass(target, 'RNAString', null.ok = T),
-    checkmate::checkNumeric(target, len = 2, null.ok = T)
+    checkmate::checkClass(target, 'DNAString', null.ok = TRUE),
+    checkmate::checkClass(target, 'RNAString', null.ok = TRUE),
+    checkmate::checkNumeric(target, len = 2, null.ok = TRUE)
   )
   
   checkmate::assert(
-    checkmate::checkClass(exclude, 'DNAString', null.ok = T),
-    checkmate::checkClass(exclude, 'RNAString', null.ok = T),
-    checkmate::assertNumeric(exclude, len = 2, null.ok = T)
+    checkmate::checkClass(exclude, 'DNAString', null.ok = TRUE),
+    checkmate::checkClass(exclude, 'RNAString', null.ok = TRUE),
+    checkmate::assertNumeric(exclude, len = 2, null.ok = TRUE)
   )
   
   checkmate::assertCharacter(product.sizes)
@@ -61,9 +62,9 @@ performPrimer3 <- function(input.sequence, target = NULL, exclude = NULL, produc
   checkmate::assertNumeric(primer.tm)
   checkmate::assertNumber(nPrimer)
   checkmate::assertLogical(internalOligo)
-  checkmate::assertCharacter(mismatching.library, null.ok = T)
-  checkmate::assertList(primer3.args, null.ok = T)
-  checkmate::assertCharacter(primer3_core.binary, null.ok = T)
+  checkmate::assertCharacter(mismatching.library, null.ok = TRUE)
+  checkmate::assertList(primer3.args, null.ok = TRUE)
+  checkmate::assertCharacter(primer3_core.binary, null.ok = TRUE)
   checkmate::assertDirectory(primer3_config, access = 'r')
   
   # Check primer3 settings. If none given is given, use the default settings.
@@ -133,7 +134,7 @@ performPrimer3 <- function(input.sequence, target = NULL, exclude = NULL, produc
   settings <- c(settings, primer3.args)
   
   # Remove empty parameters.
-  settings <- settings[!base::sapply(settings, base::is.null)]
+  settings <- settings[!base::vapply(settings, base::is.null, FUN.VALUE = c(TRUE))]
   
   # Create a string with \n between parameters.
   settings.concat <- base::paste(base::lapply(base::names(settings), function(x) base::sprintf('%s=%s', x, settings[[x]]) ), collapse = '\n')
@@ -153,23 +154,36 @@ performPrimer3 <- function(input.sequence, target = NULL, exclude = NULL, produc
   
   # Check if command failed.
   if(command.output$exitStatus != 0){
-    stop('Could not run primer3: ', command.output$stderr)
+    stop('primer3: ', command.output$stderr)
   }
   
   
   # Convert primer3 output to data.table ------------------------------------
   
-  futile.logger::flog.trace('performPrimer3 - Converting primer3 output to data.table.')
-  primer3.STDOUT <- data.table::data.table(utils::read.table(base::textConnection(command.output$stdout), sep = '=', strip.white = T, stringsAsFactors = F))
+  primer3.STDOUT <- base::strsplit(command.output$stdout, '=')
   
-  primer3.results <- data.table::data.table(t(primer3.STDOUT$V2))
-  base::colnames(primer3.results) <- t(primer3.STDOUT$V1)
+  # Clean-up / convert the STDOUT of primer3.
+  primer3.results <- base::suppressMessages(tibble::tibble(STDOUT = command.output$stdout) %>% 
+    tidyr::separate(.data$STDOUT, sep = '=', into = c('Column', 'Value')) %>% 
+    dplyr::mutate(isPrimer = grepl('_[0-9]_', .data$Column)) %>% 
+    dplyr::filter(.data$isPrimer) %>% 
+    dplyr::mutate(ColumnUnique = gsub('_[0-9]_', '_', .data$Column)) %>% 
+    dplyr::group_by(.data$ColumnUnique) %>% 
+    dplyr::summarise(Value = base::list(.data$Value)) %>% 
+    tidyr::unnest_wider(.data$Value))
   
+  primer3.results = tibble::as_tibble(t(primer3.results))
+  base::colnames(primer3.results) <- primer3.results[1,]
+  primer3.results <- primer3.results[2:nrow(primer3.results),]
+  
+  # Add Primer ID column.
+  primer3.results$PRIMER_ID <- base::seq_len(base::nrow(primer3.results))
+  primer3.results <- primer3.results %>% dplyr::select(.data$PRIMER_ID, dplyr::everything())
   
   # Check for primer3 errors ------------------------------------------------
   
   if('PRIMER_ERROR' %in% colnames(primer3.results)){
-    stop('Error in primer3: ', primer3.results$PRIMER_ERROR)
+    stop('primer3: ', primer3.results$PRIMER_ERROR)
   }
   
   
